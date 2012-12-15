@@ -13,6 +13,8 @@
 {
     CPWindow                theWindow; //this "outlet" is connected automatically by the Cib
     IBOutlet AceView        codeView;
+    IBOutlet AceView        compiledView;
+    IBOutlet AceView        moreView;
     IBOutlet CPOutlineView  outlineView;
     SyntaxNode              rootSyntaxNode;
 }
@@ -34,8 +36,29 @@
 
 - (IBAction)parse:(id)aSender
 {
-    rootSyntaxNode = [[CPTreeNode alloc] initWithSyntaxNode:Parser.Parser.parse([codeView string])];
+    var code = [codeView string];
+    rootSyntaxNode = [[CPTreeNode alloc] initWithSyntaxNode:Parser.Parser.parse(code)];
 
+    try
+    {
+        var string = ObjJCompiler.compile(code, "urlString"/*, Compiler.Flags.IncludeDebugSymbols*/);
+        compiledView.m_editor.getSession().setValue(string.toString());
+//        [compiledView setValue:string];
+    }
+    catch (anException)
+    {
+        console.log(anException);
+        var lines = [codeView string].split("\n"),
+        PAD = 3,
+        lineNumber = anException.lineNumber || anException.line,
+        errorInfo = "Syntax error in line number " + lineNumber + "\n\n" +
+        "\t" + lines.slice(Math.max(0, lineNumber - 1 - PAD), lineNumber + PAD).join("\n\t");
+        
+        console.log(errorInfo);
+        
+        [outlineView reloadData];
+        throw errorInfo;
+    }
     [outlineView reloadData];
 }
 
@@ -113,7 +136,7 @@ return;
         mutableChildNodes = [self mutableChildNodes];
 
     for (; index < count; ++index)
-        if (children[index].name !== "_")
+//        if (children[index].name !== "_")
             [mutableChildNodes addObject:[[[self class] alloc] initWithSyntaxNode:children[index]]];
 
     return self;
