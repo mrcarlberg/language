@@ -227,7 +227,9 @@ AccessorsConfiguration =
     IvarPropertyName /
     IvarGetterName /
     IvarSetterName /
-    "readonly"
+    "readonly" /
+    "readwrite" /
+    "copy"
 
 IvarPropertyName =
     "property" _ "=" _ Identifier
@@ -275,7 +277,7 @@ Selector =
     IdentifierName
 
 MethodType =
-    "(" _ (ACTION / IdentifierName) (_ (ACTION / IdentifierName))* _ ")"
+    "(" _ (ACTION / IdentifierName (_ "<" _ IdentifierName _ ">")?) (_ (ACTION / IdentifierName (_ "<" _ IdentifierName _ ">")?))* _ ")"
 
 ACTION  =
     "@action" !IdentifierPart /
@@ -443,7 +445,7 @@ Arguments =
     "(" _ ArgumentList? _ ")"
 
 ArgumentList =
-    AssignmentExpression _ ("," _ AssignmentExpression)*
+    AssignmentExpression (_ "," _ AssignmentExpression)*
 
 PrimaryExpression =
     THIS /
